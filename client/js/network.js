@@ -26,3 +26,4 @@ export function sendMove(x, y) {
     y
   }));
 }
+console.log("network.js loaded");

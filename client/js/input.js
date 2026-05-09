@@ -1,15 +1,12 @@
-import { state } from "./state.js";
 import { sendMove } from "./network.js";
 
-window.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("click", (e) => {
+
   const game = document.getElementById("game");
+  const rect = game.getBoundingClientRect();
 
-  document.addEventListener("click", (e) => {
-    const rect = game.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
 
-    state.targetX = e.clientX - rect.left;
-    state.targetY = e.clientY - rect.top;
-
-    sendMove(state.targetX, state.targetY);
-  });
+  sendMove(x, y);
 });
