@@ -1,17 +1,13 @@
 const socket = new WebSocket("ws://localhost:3000");
 
-export let worldState = {};
 export let playerId = null;
-export const snapshots = [];
+export const stateBuffer = [];
 
 socket.onopen = () => {
   console.log("Connected to server");
 };
 
 socket.onmessage = (event) => {
-
-  console.log("RAW MSG:", event.data);
-
   const data = JSON.parse(event.data);
 
   if (data.type === "init") {
@@ -19,18 +15,14 @@ socket.onmessage = (event) => {
   }
 
   if (data.type === "state") {
-
-    snapshots.push({
+    stateBuffer.push({
       time: data.time,
       players: structuredClone(data.players)
     });
 
-    if (snapshots.length > 10) {
-      snapshots.shift();
+    if (stateBuffer.length > 10) {
+      stateBuffer.shift();
     }
-
-    worldState =
-      structuredClone(data.players);
   }
 };
 

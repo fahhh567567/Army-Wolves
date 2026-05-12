@@ -1,7 +1,5 @@
 console.log("SERVER FILE LOADED");
 
-let lastTime = Date.now();
-
 const WebSocket = require("ws");
 
 const wss = new WebSocket.Server({ port: 3000 });
@@ -10,67 +8,13 @@ const { movePlayer } = require("./movement");
 
 const { createPlayer } = require("./players");
 
-const roomDefs = require("./roomdefs");
+const { checkExit } = require("./collision");
 
+const {
+  world,
+  movePlayerToRoom
+} = require("./rooms");
 
-// ----------------------
-// WORLD
-// ----------------------
-const world = {
-  lobby: {
-    exits: [
-      { x: 560, y: 150, w: 40, h: 120, to: "room1" }
-    ],
-    players: {}
-  },
-
-  room1: {
-    exits: [
-      { x: 0, y: 150, w: 40, h: 120, to: "lobby" }
-    ],
-    players: {}
-  }
-};
-
-// ----------------------
-// EXIT CHECK
-// ----------------------
-function checkExit(player, roomName) {
-  const room = roomDefs[roomName];
-
-  for (const exit of room.exits) {
-    const inside =
-      player.x > exit.x &&
-      player.x < exit.x + exit.w &&
-      player.y > exit.y &&
-      player.y < exit.y + exit.h;
-
-    if (inside) {
-      return exit.to;
-    }
-  }
-
-  return null;
-}
-
-// ----------------------
-// MOVE PLAYER BETWEEN ROOMS (FIXED)
-// ----------------------
-function movePlayerToRoom(client, id, fromRoom, toRoom) {
-  const player = world[fromRoom].players[id];
-  if (!player) return;
-
-  delete world[fromRoom].players[id];
-
-  world[toRoom].players[id] = player;
-  client.room = toRoom;
-
-  // spawn reset
-  player.x = 200;
-  player.y = 200;
-  player.targetX = 200;
-  player.targetY = 200;
-}
 
 // ----------------------
 // CONNECTION
@@ -128,8 +72,8 @@ function updateWorld() {
 
       if (newRoom && newRoom !== roomName) {
         const client = [...wss.clients].find(c => c.id === id);
-        if (client) movePlayerTseroRoom(client, id, roomName, newRoom);
-        continue;
+        if (client) movePlayerToRoom(client, id, roomName, newRoom);
+        break;
       }
     }
   }
@@ -149,10 +93,11 @@ setInterval(() => {
     console.log("SENDING STATE", Object.keys(room.players));
 
     client.send(JSON.stringify({
-      type: "state",
-      time: Date.now(),
-      players: room.players
-    }));
+  type: "state",
+  time: Date.now(),
+  players: structuredClone(room.players)
+}));
+
   });
 
 }, 50);
