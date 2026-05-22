@@ -75,7 +75,9 @@ const backgrounds = {
   lobby: loadImage("./assets/lobby.png"),
   room1: loadImage("./assets/room1.png")
 };
-
+const avatars = {
+  player: loadImage("./assets/player.png")
+};
 const ui = {
   toolbar: loadImage("./assets/toolbar.png")
 };
@@ -90,6 +92,56 @@ function loadImage(src) {
 // DRAW PLAYERS
 // ----------------------
 function drawPlayers(players) {
+
+  for (const id in players) {
+
+    const p = players[id];
+
+    if (
+      !p ||
+      p.x == null ||
+      p.y == null
+    ) continue;
+
+    const avatar =
+      avatars.player;
+
+    // fallback while image loads
+    if (!avatar || !avatar.complete) {
+
+      ctx.fillStyle =
+        id === playerId
+          ? "blue"
+          : "red";
+
+      ctx.beginPath();
+
+      ctx.arc(
+        p.x,
+        p.y,
+        15,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.fill();
+
+      continue;
+    }
+
+    const size = 128;
+const visualOffsetY = -10; // tweak small value
+
+ctx.drawImage(
+  avatar,
+  p.x - size / 2,
+  p.y - size / 2 + visualOffsetY,
+  size,
+  size
+);
+  }
+}
+/*function drawPlayers(players) {
   for (const id in players) {
 
     const p = players[id];
@@ -101,7 +153,7 @@ function drawPlayers(players) {
     ctx.arc(p.x, p.y, 15, 0, Math.PI * 2);
     ctx.fill();
   }
-}
+}*/
 
 // ----------------------
 // DRAW EXITS (GLOW + CLICKABLE)
@@ -210,6 +262,7 @@ ctx.drawImage(
 // ----------------------
 // MAIN RENDER
 // ----------------------
+
 export function render() {
 
   ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
