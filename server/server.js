@@ -12,6 +12,9 @@ const { startEngine } =
 const { applySpawn } =
   require("./spawnSystem");
 
+const roomDefs =
+  require("./roomdefs");
+
 // ----------------------
 // WEBSOCKET SERVER
 // ----------------------
@@ -38,13 +41,6 @@ wss.on("connection", (ws) => {
   // create player
     // create player
   const player = {
-
-  x: 0,
-  y: 0,
-
-  targetX: 0,
-  targetY: 0,
-
   speed: 160
 };
 
@@ -116,29 +112,21 @@ function broadcast() {
 
   wss.clients.forEach(client => {
 
-    if (
-      client.readyState !==
-      WebSocket.OPEN
-    ) return;
+    if (client.readyState !== WebSocket.OPEN) return;
 
-    const room =
-      worldState[client.room];
+    console.log(worldState[client.room].players); // ✅ correct place
 
+    const room = worldState[client.room];
     if (!room) return;
 
     client.send(JSON.stringify({
       type: "state",
-
       time: Date.now(),
-
-      players:
-        room.players,
-
-      room:
-        client.room,
-
+      players: room.players,
+      room: client.room,
       exits:
-        room.exits
+      roomDefs[client.room]
+       .interactions || []
     }));
   });
 }

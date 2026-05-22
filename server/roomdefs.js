@@ -8,12 +8,13 @@ module.exports = {
     interactions: [
       {
         id: "to_room1",
-        type: "exit",
+  type: "exit",
 
-        x: 560,
-        y: 150,
-        w: 40,
-        h: 120,
+  x: 1460,
+  y: 450,
+
+  w: 60,
+  h: 120,
 
         to: "room1",
 
@@ -29,8 +30,8 @@ module.exports = {
 
   room1: {
     spawn: {
-      x: 200,
-      y: 200
+      x: 679,
+      y: 749
     },
 
     interactions: [
@@ -46,8 +47,8 @@ module.exports = {
         to: "lobby",
 
         spawn: {
-          x: 500,
-          y: 200
+          x: 679,
+          y: 749
         }
       }
     ],

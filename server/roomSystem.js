@@ -1,12 +1,14 @@
 const { worldState } =
   require("./worldState");
 
+const { applySpawn } =
+  require("./spawnSystem");
+
 function movePlayerToRoom(
   client,
   id,
   fromRoom,
-  toRoom,
-  spawn
+  toRoom
 ) {
 
   const player =
@@ -19,12 +21,8 @@ function movePlayerToRoom(
   delete worldState[fromRoom]
     .players[id];
 
-  // place at exit spawn
-  player.x = spawn.x;
-  player.y = spawn.y;
-
-  player.targetX = spawn.x;
-  player.targetY = spawn.y;
+  // apply room spawn
+  applySpawn(player, toRoom);
 
   // add to new room
   worldState[toRoom]

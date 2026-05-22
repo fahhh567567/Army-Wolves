@@ -1,3 +1,5 @@
+console.log("RENDERER LOADED");
+
 import {
   stateBuffer,
   playerId,
@@ -15,15 +17,10 @@ const ctx =
 ctx.imageSmoothingEnabled = false;
 
 // ----------------------
-// INTERNAL GAME SIZE
+// SIZE
 // ----------------------
 const GAME_WIDTH = 1520;
 const GAME_HEIGHT = 960;
-
-// ----------------------
-// DEBUG
-// ----------------------
-const DEBUG = false;
 
 // ----------------------
 // MOUSE
@@ -54,7 +51,7 @@ canvas.addEventListener("mousemove", (e) => {
 // ----------------------
 canvas.addEventListener("click", () => {
 
-  for (const exit of exits) {
+  for (const exit of exits || []) {
 
     const hovered =
       mouseX > exit.x &&
@@ -81,32 +78,30 @@ function resize() {
 
   canvas.width = GAME_WIDTH;
   canvas.height = GAME_HEIGHT;
-
-  ctx.imageSmoothingEnabled = false;
 }
 
 resize();
 
-window.addEventListener("resize", resize);
+window.addEventListener(
+  "resize",
+  resize
+);
 
 // ----------------------
 // BACKGROUNDS
 // ----------------------
 const backgrounds = {
-  lobby: loadImage("./assets/bg.png"),
-  room1: loadImage("./assets/room1.png")
+
+  lobby:
+    loadImage("./assets/lobby.png"),
+
+  room1:
+    loadImage("./assets/room1.png")
 };
 
 function loadImage(src) {
+
   const img = new Image();
-
-  img.onload = () => {
-    console.log("Loaded:", src);
-  };
-
-  img.onerror = () => {
-    console.error("FAILED:", src);
-  };
 
   img.src = src;
 
@@ -114,56 +109,7 @@ function loadImage(src) {
 }
 
 // ----------------------
-// SNAPSHOTS
-// ----------------------
-function getSnapshots(time) {
-
-  let a = null;
-  let b = null;
-
-  for (let i = 0; i < stateBuffer.length - 1; i++) {
-
-    const s1 = stateBuffer[i];
-    const s2 = stateBuffer[i + 1];
-
-    if (s1.time <= time && time <= s2.time) {
-      a = s1;
-      b = s2;
-      break;
-    }
-  }
-
-  return { a, b };
-}
-
-// ----------------------
-// EXITS
-// ----------------------
-function drawExits() {
-
-  for (const exit of exits) {
-
-    const hovered =
-      mouseX > exit.x &&
-      mouseX < exit.x + exit.w &&
-      mouseY > exit.y &&
-      mouseY < exit.y + exit.h;
-
-    if (hovered) {
-      ctx.fillStyle = "rgba(255,255,0,0.35)";
-      ctx.fillRect(exit.x, exit.y, exit.w, exit.h);
-    }
-
-    if (DEBUG) {
-      ctx.strokeStyle = "yellow";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(exit.x, exit.y, exit.w, exit.h);
-    }
-  }
-}
-
-// ----------------------
-// PLAYERS
+// DRAW PLAYERS
 // ----------------------
 function drawPlayers(players) {
 
@@ -171,8 +117,16 @@ function drawPlayers(players) {
 
     const p = players[id];
 
+    if (
+      !p ||
+      p.x == null ||
+      p.y == null
+    ) continue;
+
     ctx.fillStyle =
-      id === playerId ? "blue" : "red";
+      id === playerId
+        ? "blue"
+        : "red";
 
     ctx.beginPath();
 
@@ -189,14 +143,156 @@ function drawPlayers(players) {
 }
 
 // ----------------------
+// DRAW EXITS
+// ----------------------
+function drawExits() {
+
+  let hoveringExit = false;
+
+  for (const exit of exits || []) {
+
+    const hovered =
+
+      mouseX > exit.x &&
+      mouseX < exit.x + exit.w &&
+      mouseY > exit.y &&
+      mouseY < exit.y + exit.h;
+
+    if (hovered) {
+      hoveringExit = true;
+    }
+
+    const centerX =
+      exit.x + exit.w / 2;
+
+    const centerY =
+      exit.y + exit.h / 2;
+
+    // ----------------------
+    // ANIMATION
+    // ----------------------
+    const time =
+      Date.now() * 0.005;
+
+    const pulse =
+      0.55 +
+      Math.sin(time) * 0.15;
+
+    // stronger when hovered
+    const intensity =
+      hovered ? 1 : 0.45;
+
+    // ----------------------
+    // PORTAL GLOW
+    // ----------------------
+    const gradient =
+      ctx.createRadialGradient(
+        centerX,
+        centerY,
+        10,
+        centerX,
+        centerY,
+        hovered ? 150 : 100
+      );
+
+    gradient.addColorStop(
+      0,
+      `rgba(255,255,220,${pulse * intensity})`
+    );
+
+    gradient.addColorStop(
+      0.2,
+      `rgba(255,220,120,${0.7 * intensity})`
+    );
+
+    gradient.addColorStop(
+      0.5,
+      `rgba(255,180,50,${0.35 * intensity})`
+    );
+
+    gradient.addColorStop(
+      1,
+      "rgba(255,140,0,0)"
+    );
+
+    ctx.fillStyle = gradient;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      centerX,
+      centerY,
+      hovered ? 150 : 100,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fill();
+
+    // ----------------------
+    // EXIT CORE
+    // ----------------------
+    ctx.shadowColor =
+      "rgba(255,220,120,1)";
+
+    ctx.shadowBlur =
+      hovered ? 45 : 20;
+
+    ctx.fillStyle =
+      hovered
+        ? `rgba(255,240,180,${pulse})`
+        : "rgba(255,220,140,0.45)";
+
+    ctx.fillRect(
+      exit.x,
+      exit.y,
+      exit.w,
+      exit.h
+    );
+
+    // ----------------------
+    // OUTLINE
+    // ----------------------
+    ctx.strokeStyle =
+      hovered
+        ? "rgba(255,255,255,1)"
+        : "rgba(255,240,180,0.45)";
+
+    ctx.lineWidth =
+      hovered ? 3 : 2;
+
+    ctx.strokeRect(
+      exit.x,
+      exit.y,
+      exit.w,
+      exit.h
+    );
+
+    ctx.shadowBlur = 0;
+  }
+
+  // ----------------------
+  // CURSOR
+  // ----------------------
+  canvas.style.cursor =
+    hoveringExit
+      ? "pointer"
+      : "default";
+}
+// ----------------------
 // MAIN RENDER
 // ----------------------
 export function render() {
 
-  ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+  ctx.clearRect(
+    0,
+    0,
+    GAME_WIDTH,
+    GAME_HEIGHT
+  );
 
-  // ----------------------
-  // BACKGROUND (SAFE)
+    // ----------------------
+  // BACKGROUND
   // ----------------------
   const room =
     currentRoom || "lobby";
@@ -204,40 +300,115 @@ export function render() {
   const bg =
     backgrounds[room];
 
-  if (bg && bg.complete && bg.naturalWidth > 0) {
-    ctx.drawImage(bg, 0, 0, GAME_WIDTH, GAME_HEIGHT);
-  } else {
-    // fallback so we NEVER see browser background
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-  }
+  if (
+    bg &&
+    bg.complete &&
+    bg.naturalWidth > 0
+  ) {
 
+    ctx.drawImage(
+      bg,
+      0,
+      0,
+      GAME_WIDTH,
+      GAME_HEIGHT
+    );
+
+  } else {
+
+    ctx.fillStyle = "#000";
+
+    ctx.fillRect(
+      0,
+      0,
+      GAME_WIDTH,
+      GAME_HEIGHT
+    );
+  }
   // ----------------------
   // EXITS
   // ----------------------
   drawExits();
 
   // ----------------------
-  // INTERPOLATION
+  // STATE CHECK
   // ----------------------
-  const renderTime = Date.now() - 100;
+  const latest =
+    stateBuffer[
+      stateBuffer.length - 1
+    ];
 
-  const { a, b } = getSnapshots(renderTime);
-
-  if (!a || !b) {
-
-    const latest =
-      stateBuffer[stateBuffer.length - 1];
-
-    if (!latest || !latest.players) return;
-
-    drawPlayers(latest.players);
+  if (
+    !latest ||
+    !latest.players
+  ) {
     return;
   }
 
-  const delta = b.time - a.time;
+  // ----------------------
+  // FALLBACK
+  // ----------------------
+  if (
+    stateBuffer.length < 2
+  ) {
+
+    drawPlayers(
+      latest.players
+    );
+
+    return;
+  }
+
+  // ----------------------
+  // INTERPOLATION
+  // ----------------------
+  const renderTime =
+    Date.now() - 100;
+
+  let a = null;
+  let b = null;
+
+  for (
+    let i = 0;
+    i < stateBuffer.length - 1;
+    i++
+  ) {
+
+    const s1 =
+      stateBuffer[i];
+
+    const s2 =
+      stateBuffer[i + 1];
+
+    if (
+
+      s1.time <= renderTime &&
+      renderTime <= s2.time
+
+    ) {
+
+      a = s1;
+      b = s2;
+
+      break;
+    }
+  }
+
+  // fallback
+  if (!a || !b) {
+
+    drawPlayers(
+      latest.players
+    );
+
+    return;
+  }
+
+  const delta =
+    b.time - a.time;
 
   const alpha =
+
     delta <= 0
       ? 0
       : (renderTime - a.time) / delta;
@@ -246,14 +417,24 @@ export function render() {
 
   for (const id in a.players) {
 
-    const p1 = a.players[id];
-    const p2 = b.players[id];
+    const p1 =
+      a.players[id];
 
-    if (!p1 || !p2) continue;
+    const p2 =
+      b.players[id];
+
+    if (!p1 || !p2)
+      continue;
 
     interpolated[id] = {
-      x: p1.x + (p2.x - p1.x) * alpha,
-      y: p1.y + (p2.y - p1.y) * alpha
+
+      x:
+        p1.x +
+        (p2.x - p1.x) * alpha,
+
+      y:
+        p1.y +
+        (p2.y - p1.y) * alpha
     };
   }
 

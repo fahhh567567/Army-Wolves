@@ -18,7 +18,17 @@ setInterval(update, 1000 / 20);
 // RENDER LOOP
 // ----------------------
 function loop() {
-  render();
+
+  console.log("LOOP");
+
+  try {
+
+    render();
+
+  } catch (err) {
+
+    console.error("RENDER ERROR:", err);
+  }
 
   requestAnimationFrame(loop);
 }

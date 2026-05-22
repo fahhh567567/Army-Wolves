@@ -39,7 +39,7 @@ socket.onmessage = (event) => {
       time: data.time,
       players: structuredClone(data.players || {})
     });
-
+     console.log("BUFFER SIZE:", stateBuffer.length);
     if (stateBuffer.length > 10) {
       stateBuffer.shift();
     }

@@ -29,30 +29,17 @@ function updateWorld(wss) {
 
       if (!player) continue;
 
-      // ----------------------
-      // MOVEMENT
-      // ----------------------
+      // movement
       movePlayer(player);
 
-      // ----------------------
-      // COOLDOWN (PREVENT ROOM SPAM)
-      // ----------------------
-      player._roomCooldown =
-        player._roomCooldown || 0;
-
-      if (Date.now() - player._roomCooldown < 500) {
-        continue;
-      }
-
-      // ----------------------
-      // INTERACTIONS
-      // ----------------------
+      // interactions
       const interaction =
         checkExit(player, roomName);
 
       if (!interaction) continue;
 
-      if (interaction.type !== "exit") continue;
+      if (interaction.type !== "exit")
+        continue;
 
       const client =
         [...wss.clients]
@@ -60,15 +47,12 @@ function updateWorld(wss) {
 
       if (!client) continue;
 
-      // mark cooldown BEFORE teleport
-      player._roomCooldown = Date.now();
-
+      // SIMPLE ROOM TRANSFER
       movePlayerToRoom(
         client,
         id,
         roomName,
-        interaction.to,
-        interaction.spawn || worldState[interaction.to].spawn
+        interaction.to
       );
     }
   }

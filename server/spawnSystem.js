@@ -6,8 +6,13 @@ function applySpawn(
   roomName
 ) {
 
+  const room =
+    roomDefs[roomName];
+
+  if (!room) return;
+
   const spawn =
-    roomDefs[roomName].spawn;
+    room.spawn;
 
   player.x = spawn.x;
   player.y = spawn.y;
