@@ -15,7 +15,6 @@ export function drawUI(ctx, canvas) {
   // ----------------------
   // DEBUG HUD BORDER
   // ----------------------
-  // remove later if you want
   ctx.strokeStyle = "red";
 
   ctx.strokeRect(
@@ -35,9 +34,8 @@ export function drawUI(ctx, canvas) {
     hud.width / 2 -
     toolbarWidth / 2;
 
-  // freely move toolbar inside HUD
   const toolbarY =
-    hud.y ;
+    hud.y;
 
   ctx.drawImage(
     ui.toolbar,
@@ -48,13 +46,29 @@ export function drawUI(ctx, canvas) {
   );
 
   // ----------------------
+  // TOOLBAR Buttons
+  // ----------------------
+  const toolbarButtons = [
+    ui.autochat,
+    ui.avatarcard,
+    ui.base,
+    ui.emotions,
+    ui.send,
+    ui.settings,
+    ui.snowball,
+    ui.social,
+    ui.wave
+  ];
+
+  console.log(toolbarButtons);
+
+  // ----------------------
   // MAP ICON
   // ----------------------
   const iconSize = 120;
 
-  // freely move map inside HUD
   const mapX =
-  hud.width - 250;
+    hud.width - 250;
 
   const mapY =
     hud.y + 35;
