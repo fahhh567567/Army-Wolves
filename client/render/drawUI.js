@@ -1,5 +1,4 @@
 import { ui } from "./assets.js";
-import { uiRegistry } from "../ui/registry.js";
 import { layoutUI } from "../ui/layout.js";
 
 export function drawUI(ctx, canvas) {
@@ -31,21 +30,32 @@ export function drawUI(ctx, canvas) {
   );
 
   // ----------------------
-  // UI ELEMENTS
+  // TOOLBAR BUTTONS
   // ----------------------
-  for (const el of uiRegistry) {
+  for (const button of layout.toolbarButtons) {
 
     const img =
-      ui[el.id];
+      ui[button.id];
 
     if (!img) continue;
 
     ctx.drawImage(
       img,
-      el.x,
-      el.y,
-      el.w,
-      el.h
+      button.x,
+      button.y,
+      button.w,
+      button.h
     );
   }
+
+  // ----------------------
+  // MAP BUTTON
+  // ----------------------
+  ctx.drawImage(
+    ui.map,
+    layout.mapButton.x,
+    layout.mapButton.y,
+    layout.mapButton.w,
+    layout.mapButton.h
+  );
 }

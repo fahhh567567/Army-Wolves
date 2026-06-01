@@ -7,15 +7,15 @@ export const uiRegistry = {
   },
 
   toolbarButtons: [
+    { id: "wave" },
+    { id: "emotions" },
+    { id: "snowball" },
     { id: "autochat" },
+    { id: "send" },
     { id: "avatarcard" },
     { id: "base" },
-    { id: "emotions" },
-    { id: "send" },
-    { id: "settings" },
-    { id: "snowball" },
     { id: "social" },
-    { id: "wave" }
+    { id: "settings" }
   ],
 
   map: {

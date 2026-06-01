@@ -8,24 +8,41 @@ function loadImage(src) {
 // BACKGROUNDS
 // ----------------------
 export const backgrounds = {
-  lobby: loadImage("../assets/lobby.png"),
-  room1: loadImage("../assets/room1.png")
+  lobby: loadImage("../assets/backgrounds/lobby.png"),
+  room1: loadImage("../assets/backgrounds/room1.png")
+  //lobby: loadImage("../assets/backgrounds/lobby2.png"),
+  //room1: loadImage("../assets/backgrounds/lobby2.png")
 };
 
 // ----------------------
 // PLAYER SPRITES
 // ----------------------
 export const avatars = {
-  down: loadImage("../assets/player_down.png"),
-  up: loadImage("../assets/player_up.png"),
-  left: loadImage("../assets/player_left.png"),
-  right: loadImage("../assets/player_right.png")
+  down: loadImage("../assets/player/player_down.png"),
+  up: loadImage("../assets/player/player_up.png"),
+  left: loadImage("../assets/player/player_left.png"),
+  right: loadImage("../assets/player/player_right.png")
+  /*down: loadImage("../assets/player/player1.png"),
+  up: loadImage("../assets/player/player1.png"),
+  left: loadImage("../assets/player/player1.png"),
+  right: loadImage("../assets/player/player1.png")
+  */
 };
 
 // ----------------------
 // UI
 // ----------------------
 export const ui = {
-  toolbar: loadImage("../assets/toolbar.png"),
-  Map: loadImage("../assets/mapicon.png")
+  toolbar: loadImage("../assets/ui/empty_toolbar.png"),
+  map: loadImage("../assets/ui/mapicon.png"),
+  
+  autochat: loadImage("../assets/ui/toolbarbuttons/autochat.png"),
+  avatarcard: loadImage("../assets/ui/toolbarbuttons/avatarcard.png"),
+  base: loadImage("../assets/ui/toolbarbuttons/base.png"),
+  emotions: loadImage("../assets/ui/toolbarbuttons/emotions.png"),
+  send: loadImage("../assets/ui/toolbarbuttons/send.png"),
+  settings: loadImage("../assets/ui/toolbarbuttons/settings.png"),
+  snowball: loadImage("../assets/ui/toolbarbuttons/snowball.png"),
+  social: loadImage("../assets/ui/toolbarbuttons/social.png"),
+  wave: loadImage("../assets/ui/toolbarbuttons/wave.png")
 };
