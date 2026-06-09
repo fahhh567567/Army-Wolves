@@ -23,7 +23,9 @@ const app = express();
 app.use(express.json());
 
 // serve client
-app.use(express.static("../client"));
+const path = require("path");
+
+app.use(express.static(path.join(__dirname, "../client")));
 
 // API routes
 app.use("/api", authRoutes);

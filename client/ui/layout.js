@@ -22,51 +22,66 @@ export function layoutUI(canvas) {
     height: 225 * 1.25
   };
 
-  toolbar.x = hud.width / 2 - toolbar.width / 2;
+  toolbar.x = (hud.width - toolbar.width) / 2;
   toolbar.y = hud.y - 40;
 
   // ----------------------
-  // TOOLBAR BUTTONS
+  // BUTTONS
   // ----------------------
   const toolbarButtons = uiRegistry.toolbarButtons;
-
-  console.log("toolbarButtons:", toolbarButtons.length);
 
   const buttonWidth = 60;
   const buttonHeight = 60;
 
-  const gap = 20;
+  // ----------------------
+  // TWEAKABLE LAYOUT SETTINGS
+  // ----------------------
+  const leftBuffer = 0.011;
+  const spacing = 0.07;
+  const centerGap = 0.37;
 
-  // ✅ CENTER THE BUTTON GROUP PROPERLY (no magic 465)
-  const totalWidth =
-    toolbarButtons.length * buttonWidth +
-    (toolbarButtons.length - 1) * gap;
+  const yOffset = 0.51; // 👈 tweak this to move whole row up/down
 
-  let x = toolbar.x + (toolbar.width - totalWidth) / 2;
-  const y = toolbar.y + 105;
+  let x = toolbar.x + toolbar.width * leftBuffer;
 
-  toolbarButtons.forEach((button, i) => {
-    button.x = x;
-    button.y = y;
+  const centerY =
+    toolbar.y +
+    toolbar.height * yOffset -
+    buttonHeight / 2;
+
+  // ----------------------
+  // LAYOUT LOOP
+  // ----------------------
+  for (let i = 0; i < toolbarButtons.length; i++) {
+
+    const button = toolbarButtons[i];
+
     button.w = buttonWidth;
     button.h = buttonHeight;
 
-    x += buttonWidth + gap;
-  });
+    // center gap after 4 buttons
+    if (i === 4) {
+      x += toolbar.width * centerGap;
+    }
+
+    button.x = x;
+    button.y = centerY;
+    button.hover = false;
+    button.pressed = false;
+
+    x += toolbar.width * spacing;
+  }
 
   // ----------------------
   // MAP BUTTON
   // ----------------------
   const mapButton = uiRegistry.map;
 
-  mapButton.x = hud.width - 350;
-  mapButton.y = hud.y - 10;
-  mapButton.w = 100 * 1.2;
-  mapButton.h = 120 * 1.2;
+  mapButton.x = hud.width - 250;
+  mapButton.y = hud.y + 20;
+  mapButton.w = 120;
+  mapButton.h = 144;
 
-  // ----------------------
-  // RETURN LAYOUT
-  // ----------------------
   return {
     hud,
     toolbar,
