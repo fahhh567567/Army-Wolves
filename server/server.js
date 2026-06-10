@@ -7,6 +7,7 @@ const express = require("express");
 const http = require("http");
 const WebSocket = require("ws");
 const crypto = require("crypto");
+const path = require("path");
 
 const authRoutes = require("./api/auth");
 const { initDB } = require("./db/init");
@@ -20,12 +21,16 @@ const roomDefs = require("./roomdefs");
 // EXPRESS APP
 // ----------------------
 const app = express();
+
 app.use(express.json());
 
-// serve client
-const path = require("path");
-
+// serve client (FIXED)
 app.use(express.static(path.join(__dirname, "../client")));
+
+// root page
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/index.html"));
+});
 
 // API routes
 app.use("/api", authRoutes);
@@ -50,13 +55,15 @@ function broadcast() {
     const room = worldState[client.room];
     if (!room) return;
 
-    client.send(JSON.stringify({
-      type: "state",
-      time: Date.now(),
-      players: room.players,
-      room: client.room,
-      exits: roomDefs[client.room]?.interactions || []
-    }));
+    client.send(
+      JSON.stringify({
+        type: "state",
+        time: Date.now(),
+        players: room.players,
+        room: client.room,
+        exits: roomDefs[client.room]?.interactions || []
+      })
+    );
   });
 }
 
@@ -77,13 +84,16 @@ wss.on("connection", (ws) => {
 
   worldState.lobby.players[id] = player;
 
-  ws.send(JSON.stringify({
-    type: "init",
-    id
-  }));
+  ws.send(
+    JSON.stringify({
+      type: "init",
+      id
+    })
+  );
 
   ws.on("message", (msg) => {
     let data;
+
     try {
       data = JSON.parse(msg);
     } catch {
@@ -111,14 +121,16 @@ wss.on("connection", (ws) => {
 });
 
 // ----------------------
-// STARTUP FLOW (IMPORTANT)
+// STARTUP FLOW
 // ----------------------
 async function start() {
   try {
     await initDB();
 
     server.listen(3000, () => {
-      console.log("HTTP + WS SERVER RUNNING ON http://localhost:3000");
+      console.log(
+        "HTTP + WS SERVER RUNNING ON http://localhost:3000"
+      );
     });
 
     startEngine(wss, broadcast);
@@ -129,5 +141,7 @@ async function start() {
   }
 }
 
-// boot
+// ----------------------
+// BOOT
+// ----------------------
 start();

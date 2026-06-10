@@ -1,15 +1,27 @@
 const pool = require("./database");
 const bcrypt = require("bcrypt");
 
-async function register(username, password) {
-  const hash = await bcrypt.hash(password, 10);
+async function register(username, password, color = "blue") {
+  try {
+    const hash = await bcrypt.hash(password, 10);
 
-  const result = await pool.query(
-    "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id, username",
-    [username, hash]
-  );
+    const result = await pool.query(
+      `
+      INSERT INTO users (username, password, color)
+      VALUES ($1, $2, $3)
+      RETURNING id, username, color
+      `,
+      [username, hash, color]
+    );
 
-  return result.rows[0];
+    return result.rows[0];
+
+  } catch (err) {
+    if (err.code === "23505") {
+      return null; // username already exists
+    }
+    throw err;
+  }
 }
 
 async function login(username, password) {
