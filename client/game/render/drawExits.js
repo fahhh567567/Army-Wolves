@@ -1,19 +1,21 @@
-import { exits } from "../state/network.js";
-
 let mouseX = 0;
 let mouseY = 0;
 
+// --------------------------------------------------
+// MOUSE POSITION INJECTION (from input system)
+// --------------------------------------------------
 export function setMouse(posX, posY) {
   mouseX = posX;
   mouseY = posY;
 }
 
+// --------------------------------------------------
+// DRAW EXITS (PURE RENDER FUNCTION)
+// --------------------------------------------------
 export function drawExits(ctx, exits = []) {
-
   let hovering = false;
 
   for (const exit of exits) {
-
     const hovered =
       mouseX > exit.x &&
       mouseX < exit.x + exit.w &&
@@ -22,12 +24,6 @@ export function drawExits(ctx, exits = []) {
 
     if (hovered) hovering = true;
 
-    const cx = exit.x + exit.w / 2;
-    const cy = exit.y + exit.h / 2;
-
-    // ----------------------
-    // GLOW
-    // ----------------------
     const pulse = 0.6 + Math.sin(Date.now() * 0.005) * 0.2;
 
     ctx.shadowColor = "rgba(255,220,120,1)";

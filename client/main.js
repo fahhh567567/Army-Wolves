@@ -1,45 +1,11 @@
-import "./input/mouse.js";
-import "./input/movement.js";
-import { render } from "./render/renderer.js";
+// client/main.js
 
-// ----------------------
-// GAME LOOP (single clock)
-// ----------------------
-let lastTime = performance.now();
+import { AppController } from "./app/core/AppController.js";
 
-// ----------------------
-// UPDATE (logic)
-// ----------------------
-function update(dt) {
+console.log("[Main] booting app...");
 
-  // later:
-  // - prediction
-  // - movement smoothing
-  // - client-side effects
-}
+const app = new AppController();
+app.start();
 
-// ----------------------
-// MAIN LOOP
-// ----------------------
-function loop(now) {
-
-  const dt = now - lastTime;
-  lastTime = now;
-
-  try {
-
-    update(dt);
-    render();
-
-  } catch (err) {
-
-    console.error("GAME LOOP ERROR:", err);
-  }
-
-  requestAnimationFrame(loop);
-}
-
-// start loop
-requestAnimationFrame(loop);
-
-console.log("game loop running");
+// optional debug
+window.__APP__ = app;

@@ -1,9 +1,7 @@
-export function drawBackground(ctx, room, backgrounds) {
-
-  const bg = backgrounds[room];
+export function drawBackground(ctx, room, getBackground) {
+  const bg = getBackground(room);
 
   const canvas = ctx.canvas;
-
   const W = canvas.width;
   const H = canvas.height;
 
@@ -13,6 +11,5 @@ export function drawBackground(ctx, room, backgrounds) {
     return;
   }
 
-  // FULL COVER (no zoom illusion mismatch)
   ctx.drawImage(bg, 0, 0, W, H);
 }

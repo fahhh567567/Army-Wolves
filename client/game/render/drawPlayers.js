@@ -1,26 +1,27 @@
-import { playerId } from "../state/network.js";
 import { avatars } from "./assets.js";
 
 const lastPositions = {};
 
-export function drawPlayers(ctx, players) {
+let getPlayerId = null;
 
+export function setPlayerIdGetter(fn) {
+  getPlayerId = fn;
+}
+
+export function drawPlayers(ctx, players) {
   if (!players) return;
 
-  for (const id in players) {
+  const playerId = getPlayerId?.();
 
+  for (const id in players) {
     const p = players[id];
     if (!p || p.x == null || p.y == null) continue;
 
-    // ----------------------
-    // DIRECTION
-    // ----------------------
     let direction = "down";
 
     const last = lastPositions[id];
 
     if (last) {
-
       const dx = p.x - last.x;
       const dy = p.y - last.y;
 
@@ -29,7 +30,6 @@ export function drawPlayers(ctx, players) {
         Math.abs(dy) > 0.5;
 
       if (moving) {
-
         if (Math.abs(dx) > Math.abs(dy)) {
           direction = dx > 0 ? "right" : "left";
         } else {
@@ -40,9 +40,6 @@ export function drawPlayers(ctx, players) {
 
     lastPositions[id] = { x: p.x, y: p.y };
 
-    // ----------------------
-    // SPRITE
-    // ----------------------
     const avatar = avatars[direction];
 
     if (!avatar || !avatar.complete) {

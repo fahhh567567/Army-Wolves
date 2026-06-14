@@ -1,27 +1,24 @@
-// engine/core/GameClient.js
-
-import { createSocket } from "../net/socket.js";
-import { handlePacket } from "../net/protocol.js";
+import { SocketClient } from "../net/socket.js";
 
 import { worldState } from "../state/worldState.js";
 import { stateBuffer } from "../state/stateBuffer.js";
 
 import { startRenderer } from "../render/renderer.js";
-import { startInput } from "../input/mouse.js";
-
-import { session } from "../../app/core/session.js";
+import { startInput } from "../input/inputController.js";
 
 export class GameClient {
-  constructor() {
-    this.socket = null;
+  constructor(session) {
+    this.session = session;
+
+    this.socket = new SocketClient();
     this.running = false;
 
     this.lastUpdateTime = 0;
-    this.tickRate = 1000 / 60; // 60 FPS logic tick
+    this.tickRate = 1000 / 60;
   }
 
   // --------------------------------------------------
-  // START GAME CLIENT
+  // START
   // --------------------------------------------------
   async start() {
     console.log("[GameClient] Starting...");
@@ -35,28 +32,27 @@ export class GameClient {
   }
 
   // --------------------------------------------------
-  // WORLD INIT
+  // WORLD
   // --------------------------------------------------
   initWorld() {
     worldState.players = {};
-    worldState.room = session.server || "lobby";
+    worldState.playerId = this.session.playerId;
+    worldState.room = this.session.server || "lobby";
 
-    console.log("[GameClient] World initialized:", worldState.room);
+    console.log("[GameClient] World:", worldState.room);
   }
 
   // --------------------------------------------------
-  // INPUT SYSTEM
+  // INPUT
   // --------------------------------------------------
   initInput() {
     startInput({
-      onMove: (x, y) => {
-        this.sendMove(x, y);
-      }
+      onMove: (x, y) => this.sendMove(x, y)
     });
   }
 
   // --------------------------------------------------
-  // RENDER SYSTEM
+  // RENDER
   // --------------------------------------------------
   initRender() {
     startRenderer({
@@ -65,77 +61,86 @@ export class GameClient {
   }
 
   // --------------------------------------------------
-  // WEBSOCKET CONNECTION
+  // SOCKET CONNECTION
   // --------------------------------------------------
   connect() {
-    this.socket = createSocket();
+    this.socket.connect();
 
-    this.socket.onopen = () => {
+    // connection events
+    this.socket.on("open", () => {
       console.log("[GameClient] WS connected");
-
       this.authenticate();
-    };
+    });
 
-    this.socket.onmessage = (event) => {
-      const packet = JSON.parse(event.data);
-      this.handlePacket(packet);
-    };
-
-    this.socket.onclose = () => {
+    this.socket.on("close", () => {
       console.warn("[GameClient] WS disconnected");
       this.running = false;
-    };
-  }
+    });
 
-  // --------------------------------------------------
-  // AUTH HANDSHAKE
-  // --------------------------------------------------
-  authenticate() {
-    this.socket.send(
-      JSON.stringify({
-        type: "auth",
-        token: session.token,
-        server: session.server
-      })
-    );
-  }
-
-  // --------------------------------------------------
-  // PACKET HANDLER
-  // --------------------------------------------------
-  handlePacket(packet) {
-    handlePacket(packet, {
-      onInit: (data) => {
-        console.log("[GameClient] INIT received");
-
-        session.playerId = data.id;
-
-        worldState.players = data.players || {};
-        worldState.room = data.room;
-
-        this.startLoop();
-      },
-
-      onState: (data) => {
-        stateBuffer.push(data);
-      },
-
-      onPlayerJoin: (player) => {
-        worldState.players[player.id] = player;
-      },
-
-      onPlayerLeave: (id) => {
-        delete worldState.players[id];
-      },
-
-      onChat: (msg) => {
-        console.log("[CHAT]", msg);
-      }
+    // packet handler
+    this.socket.on("message", (packet) => {
+      this.handlePacket(packet);
     });
   }
 
   // --------------------------------------------------
-  // GAME LOOP
+  // AUTH
+  // --------------------------------------------------
+  authenticate() {
+    this.socket.send("auth", {
+      token: this.session.token,
+      server: this.session.server
+    });
+  }
+
+  // --------------------------------------------------
+  // PACKET ROUTING
+  // --------------------------------------------------
+  handlePacket(packet) {
+    switch (packet.type) {
+
+      case "init": {
+        console.log("[GameClient] INIT");
+
+        this.session.playerId = packet.id;
+
+        worldState.players = { ...packet.players };
+        worldState.room = packet.room;
+
+        this.startLoop();
+        break;
+      }
+
+      case "state": {
+        stateBuffer.push({
+          time: packet.time,
+          players: packet.players
+        });
+        break;
+      }
+
+      case "player_join": {
+        worldState.players[packet.id] = packet.player;
+        break;
+      }
+
+      case "player_leave": {
+        delete worldState.players[packet.id];
+        break;
+      }
+
+      case "chat": {
+        console.log("[CHAT]", packet.message);
+        break;
+      }
+
+      default:
+        console.warn("[GameClient] Unknown packet:", packet.type);
+    }
+  }
+
+  // --------------------------------------------------
+  // LOOP
   // --------------------------------------------------
   startLoop() {
     const loop = (time) => {
@@ -155,7 +160,7 @@ export class GameClient {
   }
 
   // --------------------------------------------------
-  // UPDATE TICK
+  // UPDATE
   // --------------------------------------------------
   update(delta) {
     this.interpolate();
@@ -163,50 +168,41 @@ export class GameClient {
   }
 
   // --------------------------------------------------
-  // INTERPOLATION (smooth movement)
+  // INTERPOLATION (safe version)
   // --------------------------------------------------
   interpolate() {
-    if (stateBuffer.length < 2) return;
+    if (stateBuffer.length < 1) return;
 
     const latest = stateBuffer[stateBuffer.length - 1];
+    if (!latest?.players) return;
 
-    worldState.players = latest.players;
+    for (const id in latest.players) {
+      worldState.players[id] = {
+        ...worldState.players[id],
+        ...latest.players[id]
+      };
+    }
   }
 
   // --------------------------------------------------
-  // GAME SYSTEMS
+  // SYSTEMS
   // --------------------------------------------------
   updateSystems(delta) {
-    // future:
-    // - camera update
-    // - animations
-    // - emotes
-    // - particles
+    // camera, animations, particles later
   }
 
   // --------------------------------------------------
-  // SEND MOVE
+  // MOVE
   // --------------------------------------------------
   sendMove(x, y) {
-    if (!this.socket || this.socket.readyState !== 1) return;
-
-    this.socket.send(
-      JSON.stringify({
-        type: "move",
-        x,
-        y
-      })
-    );
+    this.socket.send("move", { x, y });
   }
 
   // --------------------------------------------------
-  // STOP CLIENT
+  // STOP
   // --------------------------------------------------
   stop() {
     this.running = false;
-
-    if (this.socket) {
-      this.socket.close();
-    }
+    this.socket.disconnect();
   }
 }

@@ -1,7 +1,5 @@
-// engine/net/protocol.js
-
 // --------------------------------------------------
-// CLIENT → SERVER MESSAGES
+// CLIENT → SERVER
 // --------------------------------------------------
 export const C2S = {
   AUTH: "auth",
@@ -13,7 +11,7 @@ export const C2S = {
 };
 
 // --------------------------------------------------
-// SERVER → CLIENT MESSAGES
+// SERVER → CLIENT
 // --------------------------------------------------
 export const S2C = {
   INIT: "init",

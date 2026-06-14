@@ -1,4 +1,4 @@
-import { uiState } from "./uiState.js";
+import { uiState } from "../state/uistate.js";
 import { invalidateLayout } from "../render/drawUI.js";
 
 export function openMap() {

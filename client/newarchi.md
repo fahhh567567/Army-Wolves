@@ -66,3 +66,40 @@ client/
 ├── html/
 │
 └── main.js
+
+
+
+
+
+
+
+
+
+
+
+client/
+│
+├── main.js
+│
+├── app/
+│
+├── game/
+│   ├── engine/
+│   ├── net/
+│   ├── state/
+│   ├── render/
+│   ├── input/
+│   ├── systems/
+│   └── ui/
+│
+├── features/
+│   ├── chat/
+│   ├── emotes/
+│   ├── inventory/
+│   ├── friends/
+│   └── map/
+│
+├── shared/
+├── assets/
+├── css/
+└── html/

@@ -1,20 +1,24 @@
 import { ui } from "./assets.js";
 import { layoutUI } from "../ui/layout.js";
-import { mouseState } from "../input/mouseState.js";
 
 let cachedLayout = null;
 let lastCanvasW = 0;
 let lastCanvasH = 0;
 let layoutDirty = true;
 
-// Exposed to input system
-export let lastUILayout = null;
+// instead of exporting raw global state
+let lastLayoutSnapshot = null;
+
+export function getLastUILayout() {
+  return lastLayoutSnapshot;
+}
 
 export function invalidateLayout() {
   layoutDirty = true;
 }
 
-export function drawUI(ctx, canvas) {
+export function drawUI(ctx, canvas, inputState) {
+  const mouse = inputState?.mouse;
 
   const shouldRebuild =
     layoutDirty ||
@@ -29,48 +33,47 @@ export function drawUI(ctx, canvas) {
     lastCanvasH = canvas.height;
 
     layoutDirty = false;
-    lastUILayout = cachedLayout;
+    lastLayoutSnapshot = cachedLayout;
   }
 
   const layout = cachedLayout;
 
   // ----------------------
-  // RESET HOVER STATE
+  // RESET HOVER
   // ----------------------
   for (const button of layout.toolbarButtons) {
     button.hover = false;
   }
 
   // ----------------------
-  // TOOLBAR HOVER DETECTION
+  // TOOLBAR HOVER
   // ----------------------
   for (const button of layout.toolbarButtons) {
     if (
-      mouseState.x >= button.x &&
-      mouseState.x <= button.x + button.w &&
-      mouseState.y >= button.y &&
-      mouseState.y <= button.y + button.h
+      mouse?.x >= button.x &&
+      mouse?.x <= button.x + button.w &&
+      mouse?.y >= button.y &&
+      mouse?.y <= button.y + button.h
     ) {
       button.hover = true;
     }
   }
 
   // ----------------------
-  // MAP HOVER DETECTION
+  // MAP HOVER
   // ----------------------
   const map = layout.mapButton;
 
   map.hover =
-    mouseState.x >= map.x &&
-    mouseState.x <= map.x + map.w &&
-    mouseState.y >= map.y &&
-    mouseState.y <= map.y + map.h;
+    mouse?.x >= map.x &&
+    mouse?.x <= map.x + map.w &&
+    mouse?.y >= map.y &&
+    mouse?.y <= map.y + map.h;
 
   // ----------------------
-  // HUD DEBUG BORDER
+  // HUD DEBUG
   // ----------------------
   ctx.strokeStyle = "red";
-
   ctx.strokeRect(
     layout.hud.x,
     layout.hud.y,
@@ -79,7 +82,7 @@ export function drawUI(ctx, canvas) {
   );
 
   // ----------------------
-  // TOOLBAR BACKGROUND
+  // TOOLBAR
   // ----------------------
   if (ui.toolbar) {
     ctx.drawImage(
@@ -92,12 +95,10 @@ export function drawUI(ctx, canvas) {
   }
 
   // ----------------------
-  // TOOLBAR BUTTONS
+  // BUTTONS
   // ----------------------
   for (const button of layout.toolbarButtons) {
-
     const img = ui[button.id];
-
     if (!img) continue;
 
     ctx.globalAlpha = button.hover ? 0.7 : 1;
@@ -114,10 +115,9 @@ export function drawUI(ctx, canvas) {
   ctx.globalAlpha = 1;
 
   // ----------------------
-  // MAP BUTTON
+  // MAP
   // ----------------------
   if (ui.map) {
-
     ctx.globalAlpha = map.hover ? 0.7 : 1;
 
     ctx.drawImage(

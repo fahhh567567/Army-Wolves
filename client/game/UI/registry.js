@@ -1,5 +1,3 @@
-import { openMap } from "./actions.js";
-
 export const uiRegistry = {
 
   toolbar: {
@@ -19,7 +17,6 @@ export const uiRegistry = {
   ],
 
   map: {
-    id: "map",
-    action: openMap
+    id: "map"
   }
 };
