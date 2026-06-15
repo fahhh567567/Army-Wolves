@@ -6,13 +6,24 @@ export class GameScreen {
     this.client = null;
   }
 
-  async render() {
-    document.getElementById("app").innerHTML = `
-      <canvas id="game"></canvas>
-    `;
+  async enter() {
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
 
-    this.client = new GameClient(this.session);
+    this.client = new GameClient(this.session, {
+      canvas,
+      ctx
+    });
+
     await this.client.start();
+  }
+
+  update(dt) {
+    this.client?.update?.(dt);
+  }
+
+  render(ctx) {
+    this.client?.render?.(ctx);
   }
 
   destroy() {

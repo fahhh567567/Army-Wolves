@@ -1,4 +1,4 @@
-import { avatars } from "./assets.js";
+import { avatars } from "../assets/assets.js";
 
 const lastPositions = {};
 

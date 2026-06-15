@@ -1,110 +1,98 @@
-// app/core/AppController.js
+import { ScreenManager } from "./screenManager.js";
 
-import { session } from "./session.js";
-
-import { LoginScreen } from "../screens/LoginScreen.js";
-import { ServerSelectScreen } from "../screens/ServerSelectScreen.js";
+import { LoginScreen } from "../screens/loginScreen.js";
+import { ServerSelectScreen } from "../screens/serverSelectScreen.js";
 import { LoadingScreen } from "../screens/loadingScrean.js";
-import { GameScreen } from "../screens/GameScreen.js";
-
-import { GameClient } from "../../game/engine/gameClient.js";
+import { GameScreen } from "../screens/gameScreen.js";
 
 export class AppController {
   constructor() {
-    this.currentScreen = null;
-    this.gameClient = null;
+    this.screenManager = new ScreenManager();
+
+    this.canvas = document.getElementById("game");
+    this.ctx = this.canvas.getContext("2d");
+
+    this.lastTime = 0;
+
+    this._bindInput();
   }
 
-  // ----------------------
-  // BOOT
-  // ----------------------
   start() {
     console.log("[App] Starting...");
+
     this.showLogin();
+    requestAnimationFrame(this.loop.bind(this));
   }
 
-  // ----------------------
-  // SCREEN SYSTEM
-  // ----------------------
-  setScreen(screen) {
-    this.currentScreen?.destroy?.();
-    this.currentScreen = screen;
-    this.currentScreen.render?.();
+  loop(t) {
+    const dt = t - this.lastTime;
+    this.lastTime = t;
+
+    this.screenManager.update(dt);
+
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.screenManager.render(this.ctx);
+
+    requestAnimationFrame(this.loop.bind(this));
   }
 
-  // ----------------------
-  // LOGIN
-  // ----------------------
+  // ---------------- screens ----------------
+
   showLogin() {
-    this.setScreen(
+    this.screenManager.set(
       new LoginScreen({
         onLoginSuccess: (data) => {
-          session.set({
-            playerId: data.user.id,
-            token: null,
-            server: "lobby"
-          });
-
           this.showServerSelect();
         }
-      })
+      }),
+      "LOGIN"
     );
   }
 
-  // ----------------------
-  // SERVER SELECT
-  // ----------------------
   showServerSelect() {
-    this.setScreen(
+    this.screenManager.set(
       new ServerSelectScreen({
         onJoin: (server) => {
-          session.set({
-            ...session,
-            server
-          });
-
           this.showLoading();
         }
-      })
+      }),
+      "SERVER_SELECT"
     );
   }
 
-  // ----------------------
-  // LOADING (REAL FLOW)
-  // ----------------------
   showLoading() {
-    const loading = new LoadingScreen({
-      message: "Connecting to server..."
-    });
+    this.screenManager.set(
+      new LoadingScreen(),
+      "LOADING"
+    );
 
-    this.setScreen(loading);
-
-    this.gameClient = new GameClient(session, {
-      onStatus: (msg) => {
-        loading.setMessage(msg);
-      },
-
-      onReady: () => {
-        this.setScreen(
-          new GameScreen({
-            gameClient: this.gameClient,
-            session
-          })
-        );
-      }
-    });
-
-    this.gameClient.start();
+    // later:
+    setTimeout(() => {
+      this.showGame();
+    }, 1000);
   }
 
-  // ----------------------
-  // STOP
-  // ----------------------
-  stop() {
-    this.currentScreen?.destroy?.();
-    this.gameClient?.stop?.();
+  showGame() {
+    this.screenManager.set(
+      new GameScreen(),
+      "GAME"
+    );
+  }
 
-    this.currentScreen = null;
-    this.gameClient = null;
+  // ---------------- input ----------------
+
+  _bindInput() {
+    window.addEventListener("keydown", (e) => {
+      this.screenManager.keyDown(e);
+    });
+
+    window.addEventListener("mousedown", (e) => {
+      const rect = this.canvas.getBoundingClientRect();
+
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      this.screenManager.pointerDown(x, y);
+    });
   }
 }

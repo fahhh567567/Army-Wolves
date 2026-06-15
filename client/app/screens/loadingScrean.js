@@ -1,27 +1,32 @@
-// app/screens/LoadingScreen.js
-
 export class LoadingScreen {
   constructor({ message = "Loading..." } = {}) {
     this.message = message;
   }
 
-  render() {
-    document.getElementById("app").innerHTML = `
-      <div class="loading-screen">
-        <div class="panel">
-          <h1>Loading</h1>
-          <p id="loading-text">${this.message}</p>
-        </div>
-      </div>
-    `;
-  }
+  enter() {}
 
   setMessage(msg) {
-    const el = document.getElementById("loading-text");
-    if (el) el.textContent = msg;
+    this.message = msg;
+  }
+
+  update() {}
+
+  render(ctx) {
+    // background
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+    // title
+    ctx.fillStyle = "white";
+    ctx.font = "40px Arial";
+    ctx.fillText("Loading", 420, 200);
+
+    // message
+    ctx.font = "20px Arial";
+    ctx.fillText(this.message, 400, 280);
   }
 
   destroy() {
-    document.getElementById("app").innerHTML = "";
+    // nothing to clean up (no DOM)
   }
 }

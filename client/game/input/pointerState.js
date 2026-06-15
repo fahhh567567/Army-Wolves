@@ -1,4 +1,4 @@
-export const pointerstate = {
+export const pointerState = {
   x: 0,
   y: 0,
   down: false

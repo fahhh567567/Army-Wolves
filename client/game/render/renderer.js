@@ -1,4 +1,4 @@
-import { backgrounds } from "./assets.js";
+import { backgrounds } from "../assets/assets.js";
 import { drawBackground } from "./drawBackground.js";
 import { drawPlayers } from "./drawPlayers.js";
 import { setPlayerIdGetter } from "./drawPlayers.js";

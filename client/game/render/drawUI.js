@@ -1,4 +1,4 @@
-import { ui } from "./assets.js";
+import { ui } from "../assets/assets.js";
 import { layoutUI } from "../ui/layout.js";
 
 let cachedLayout = null;

@@ -5,16 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Army Wolves</title>
 
-    <link rel="stylesheet" href="/css/play.css">
+    <link rel="stylesheet" href="./css/play.css">
 </head>
 <body>
 
-    <!-- App root -->
-    <div id="app"></div>
+    <!-- NAVBAR (DOM UI - outside game) -->
+    <header class="navbar">
+        <div class="nav-left">
+            <div class="logo">Army Wolves</div>
 
-    <!-- Game canvas -->
-    <canvas id="game" hidden></canvas>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="#">Community</a>
+                <a href="#">Help</a>
+            </div>
+        </div>
+    </header>
 
+    <!-- GAME AREA WRAPPER -->
+    <main id="gameBox">
+        <canvas id="game"></canvas>
+    </main>
+
+    <!-- APP BOOT -->
     <script type="module" src="/main.js"></script>
 
 </body>

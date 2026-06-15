@@ -1,6 +1,6 @@
 // client/main.js
 
-import { AppController } from "./app/core/AppController.js";
+import { AppController } from "./app/core/appController.js";
 
 console.log("[Main] booting app...");
 

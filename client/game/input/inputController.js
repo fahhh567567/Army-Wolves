@@ -1,4 +1,4 @@
-import { lastUILayout } from "../render/drawUI.js";
+import { getLastUILayout } from "../render/drawUI.js";
 import { uiRegistry } from "../ui/registry.js";
 import { pointerState } from "./pointerState.js";
 
@@ -23,7 +23,7 @@ game.addEventListener("click", (e) => {
   pointerState.x = x;
   pointerState.y = y;
 
-  const layout = lastUILayout;
+  const layout = getLastUILayout();
 
   // UI FIRST
   if (layout) {
