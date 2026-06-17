@@ -1,6 +1,6 @@
 // register.js
 
-import { registerUser } from "./registerApi.js";
+import { registerUser } from "./registerAPI";
 
 let selectedColor = "pink";
 let selectedCaptcha = null;

@@ -8,6 +8,13 @@ import { GameScreen } from "../screens/gameScreen.js";
 import { AppRenderer } from "../appRender/appRenderer.js";
 import { GameClient } from "../../game/engine/gameClient.js";
 
+// services
+import { login } from "../services/authService.js";
+import { session } from "./session.js";
+
+// input
+import { FormController } from "./formController.js";
+
 export class AppController {
   constructor() {
     this.screenManager = new ScreenManager();
@@ -18,10 +25,12 @@ export class AppController {
     this.appRenderer = new AppRenderer(this.ctx);
 
     this.gameClient = null;
-
     this.lastTime = 0;
 
-    this._bindInput();
+    // use form controller directly
+    this.formController = new FormController();
+
+    this.bindInput();
   }
 
   start() {
@@ -36,15 +45,17 @@ export class AppController {
 
     const screen = this.screenManager.current;
 
-    // 1. UPDATE
     this.screenManager.update(dt);
     this.gameClient?.update?.(dt);
 
-    // 2. CLEAR
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // 3. RENDER (choose pipeline)
-    if (screen?.type === "game") {
+    if (!screen) {
+      requestAnimationFrame(this.loop.bind(this));
+      return;
+    }
+
+    if (screen.type === "game") {
       this.gameClient?.render(this.ctx);
     } else {
       this.appRenderer.render(screen);
@@ -53,16 +64,38 @@ export class AppController {
     requestAnimationFrame(this.loop.bind(this));
   }
 
-  // ---------------- screens ----------------
+  // ---------------- LOGIN FLOW ----------------
 
   showLogin() {
     this.screenManager.set(
       new LoginScreen({
-        onLoginSuccess: () => this.showServerSelect()
+        onLogin: (username, password) =>
+          this.handleLogin(username, password)
       }),
       "LOGIN"
     );
   }
+
+  async handleLogin(username, password) {
+    try {
+      const data = await login(username, password);
+
+      session.set(data);
+
+      console.log("[Auth] Login success:", data);
+
+      this.showServerSelect();
+    } catch (err) {
+      console.error("[Auth] Login failed:", err);
+
+      const screen = this.screenManager.current;
+      if (screen) {
+        screen.error = "Invalid username or password";
+      }
+    }
+  }
+
+  // ---------------- FLOW ----------------
 
   showServerSelect() {
     this.screenManager.set(
@@ -74,10 +107,7 @@ export class AppController {
   }
 
   showLoading() {
-    this.screenManager.set(
-      new LoadingScreen(),
-      "LOADING"
-    );
+    this.screenManager.set(new LoadingScreen(), "LOADING");
 
     setTimeout(() => {
       this.showGame();
@@ -85,21 +115,18 @@ export class AppController {
   }
 
   showGame() {
-    this.screenManager.set(
-      new GameScreen(),
-      "GAME"
-    );
+    this.screenManager.set(new GameScreen(), "GAME");
 
-    // IMPORTANT: game is its own renderer system
     this.gameClient = new GameClient();
     this.gameClient.start();
   }
 
-  // ---------------- input ----------------
+  // ---------------- INPUT ----------------
 
-  _bindInput() {
+  bindInput() {
     window.addEventListener("keydown", (e) => {
-      this.screenManager.keyDown(e);
+      const screen = this.screenManager.current;
+      this.formController.keyDown(screen, e);
     });
 
     window.addEventListener("mousedown", (e) => {
@@ -108,7 +135,8 @@ export class AppController {
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
-      this.screenManager.pointerDown(x, y);
+      const screen = this.screenManager.current;
+      this.formController.pointerDown(screen, x, y);
     });
   }
 }
