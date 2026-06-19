@@ -24,15 +24,24 @@ const app = express();
 
 app.use(express.json());
 
-// serve client (FIXED)
-app.use(express.static(path.join(__dirname, "../client")));
+/**
+ * Serve ONLY public assets cleanly
+ * (prevents leaking server folders + fixes asset resolution issues)
+ */
+app.use(express.static(path.join(__dirname, "../client/new_client/public")));
 
-// root page
+// ----------------------
+// ROOT PAGE
+// ----------------------
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../client/index.html"));
+  res.sendFile(
+    path.join(__dirname, "../client/new_client/public/play.html")
+  );
 });
 
-// API routes
+// ----------------------
+// API ROUTES
+// ----------------------
 app.use("/api", authRoutes);
 
 // ----------------------
@@ -46,6 +55,19 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 // ----------------------
+// SAFE ROOM INIT
+// ----------------------
+function ensureRoom(roomId) {
+  if (!worldState[roomId]) {
+    worldState[roomId] = {
+      players: {},
+      exits: []
+    };
+  }
+  return worldState[roomId];
+}
+
+// ----------------------
 // BROADCAST FUNCTION
 // ----------------------
 function broadcast() {
@@ -53,7 +75,7 @@ function broadcast() {
     if (client.readyState !== WebSocket.OPEN) return;
 
     const room = worldState[client.room];
-    if (!room) return;
+    if (!room || !room.players) return;
 
     client.send(
       JSON.stringify({
@@ -61,7 +83,7 @@ function broadcast() {
         time: Date.now(),
         players: room.players,
         room: client.room,
-        exits: roomDefs[client.room]?.interactions || []
+        exits: roomDefs?.[client.room]?.interactions || []
       })
     );
   });
@@ -76,21 +98,38 @@ wss.on("connection", (ws) => {
   ws.id = id;
   ws.room = "lobby";
 
+  // ensure room exists
+  const room = ensureRoom("lobby");
+
+  // create player
   const player = {
+    id,
+    x: 0,
+    y: 0,
+    targetX: 0,
+    targetY: 0,
     speed: 190
   };
 
   applySpawn(player, "lobby");
 
-  worldState.lobby.players[id] = player;
+  room.players[id] = player;
 
+  // ----------------------
+  // IMPORTANT: FULL INIT PACKET (FIX)
+  // ----------------------
   ws.send(
     JSON.stringify({
       type: "init",
-      id
+      id,
+      room: ws.room,
+      players: room.players
     })
   );
 
+  // ----------------------
+  // MESSAGE HANDLER
+  // ----------------------
   ws.on("message", (msg) => {
     let data;
 
@@ -100,21 +139,27 @@ wss.on("connection", (ws) => {
       return;
     }
 
+    const room = worldState[ws.room];
+    if (!room) return;
+
+    const player = room.players[ws.id];
+    if (!player) return;
+
+    // ----------------------
+    // MOVE
+    // ----------------------
     if (data.type === "move") {
-      const room = worldState[ws.room];
-      if (!room) return;
-
-      const player = room.players[ws.id];
-      if (!player) return;
-
       player.targetX = data.x;
       player.targetY = data.y;
     }
   });
 
+  // ----------------------
+  // CLEANUP
+  // ----------------------
   ws.on("close", () => {
     const room = worldState[ws.room];
-    if (!room) return;
+    if (!room || !room.players) return;
 
     delete room.players[ws.id];
   });

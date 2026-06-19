@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account</title>
+
+    <link rel="stylesheet" href="../css/register.css">
+</head>
+<body>
+
+<header class="navbar">
+    <div class="nav-left">
+        <div class="logo">Army Wolves</div>
+
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="#">Community</a>
+            <a href="#">Help</a>
+        </div>
+    </div>
+
+    <a href="play.html" class="play-btn">Play Now!</a>
+</header>
+
+<main class="register-container">
+
+    <!-- CHARACTER SECTION -->
+    <section class="character-section">
+
+        <h2>Choose Your Character Color</h2>
+
+        <div class="character-area">
+
+            <div class="color-ring">
+
+                <span class="color color-pink selected" data-color="pink"></span>
+                <span class="color color-red" data-color="red"></span>
+                <span class="color color-orange" data-color="orange"></span>
+                <span class="color color-yellow" data-color="yellow"></span>
+                <span class="color color-lime" data-color="lime"></span>
+                <span class="color color-green" data-color="green"></span>
+                <span class="color color-teal" data-color="teal"></span>
+                <span class="color color-cyan" data-color="cyan"></span>
+                <span class="color color-blue" data-color="blue"></span>
+                <span class="color color-darkblue" data-color="darkblue"></span>
+                <span class="color color-purple" data-color="purple"></span>
+                <span class="color color-brown" data-color="brown"></span>
+                <span class="color color-black" data-color="black"></span>
+                <span class="color color-white" data-color="white"></span>
+
+            </div>
+
+            <div class="character-preview">
+                <img id="characterPreview" src="../assets/player/player1.png" alt="Character">
+            </div>
+
+        </div>
+
+        <div class="referral">
+            <label for="referral">Referral Code (Optional)</label>
+            <input id="referral" type="text" placeholder="Referral Code">
+        </div>
+
+    </section>
+
+    <!-- FORM SECTION -->
+    <section class="form-section">
+
+        <div class="field">
+            <h3>Create a Character Name</h3>
+            <input id="username" type="text" placeholder="Username" maxlength="20">
+        </div>
+
+        <div class="field">
+            <h3>Create a Password</h3>
+            <input id="password" type="password" placeholder="Password">
+        </div>
+
+        <div class="field">
+            <h3>Confirm Password</h3>
+            <input id="confirmPassword" type="password" placeholder="Confirm Password">
+        </div>
+
+        <div class="field">
+            <h3>Email Address</h3>
+            <input id="email" type="email" placeholder="Email Address">
+        </div>
+
+        <!-- CAPTCHA -->
+        <div class="field">
+            <h3>Authentication</h3>
+
+            <div class="captcha-box">
+                <p>Select the Popcorn</p>
+
+                <div class="choices">
+                    <button type="button" data-answer="pizza">🍕</button>
+                    <button type="button" data-answer="popcorn">🍿</button>
+                    <button type="button" data-answer="watermelon">🍉</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- TERMS -->
+        <div class="terms">
+            <input type="checkbox" id="terms">
+            <label for="terms">I agree to the Terms & Conditions</label>
+        </div>
+
+        <button id="registerBtn" class="create-btn">
+            CREATE ACCOUNT
+        </button>
+
+    </section>
+
+</main>
+
+<script type="module" src="./register/register.js"></script>
+
+</body>
+</html>

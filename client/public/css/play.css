@@ -1,0 +1,60 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(180deg, #1d2614, #0e140a);
+  color: white;
+}
+
+/* NAVBAR */
+.navbar {
+  height: 64px;
+  background: linear-gradient(180deg, #303b27, #212c1b);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 40px;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  margin-right: 20px;
+}
+
+.play-btn {
+  display: inline-block;
+  background: linear-gradient(#ffd84d, #ff9c00);
+  color: black;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 10px 20px;
+  border-radius: 6px;
+}
+
+/* REACT APP ROOT */
+#root {
+  width: 100%;
+  min-height: calc(100vh - 64px);
+}

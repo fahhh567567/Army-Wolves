@@ -1,0 +1,168 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(180deg, #1d2614, #0e140a);
+}
+
+/* NAVBAR */
+.navbar {
+  background: linear-gradient(180deg, #303b27, #212c1b);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 40px;
+  color: white;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  margin: 0 10px;
+}
+
+.play-btn {
+  display: inline-block;          /* important for <a> */
+  background: linear-gradient(#ffd84d, #ff9c00);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+
+  color: black;                  /* or white if you prefer */
+  text-decoration: none;         /* removes underline */
+}
+
+.play-btn:visited {
+  color: black;                  /* prevents purple visited color */
+}
+
+.play-btn:hover {
+  filter: brightness(1.1);       /* nice simple hover effect */
+}
+
+/* HERO */
+.hero {
+  width: 90%;
+  margin: 20px auto;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.hero img {
+  width: 100%;
+}
+
+/* FEATURES */
+.features {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  width: 90%;
+  margin: 20px auto;
+}
+
+.feature-card {
+  background: #1b5fa7;
+  border-radius: 12px;
+  overflow: hidden;
+  width: 23%;
+  text-align: center;
+  color: white;
+}
+
+.feature-card img {
+  width: 100%;
+}
+
+.feature-card h3 {
+  margin: 10px 0;
+}
+
+.feature-card p {
+  font-size: 13px;
+  padding: 0 10px 15px;
+}
+
+/* PROMO */
+.bottom {
+  width: 90%;
+  margin: 30px auto;
+  display: flex;
+  gap: 20px;
+}
+
+.bottom-left img {
+  width: 100%;
+  border-radius: 12px;
+}
+
+.bottom-right {
+  background: linear-gradient(#2d7bdc, #1c5fb8);
+  border-radius: 12px;
+  padding: 20px;
+  color: white;
+  width: 50%;
+}
+
+/* BACKGROUND SECTION */
+.bg-section {
+  height: 400px;
+  background: url('https://via.placeholder.com/1200x400') center/cover no-repeat;
+}
+
+/* FOOTER */
+.footer {
+  background: linear-gradient(#2aa7d6, #1e73be);
+  padding: 40px 0;
+  color: white;
+}
+
+.footer-content {
+  width: 90%;
+  margin: auto;
+  display: flex;
+  justify-content: space-between;
+}
+
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footer-col a {
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.footer-btn {
+  margin: 5px 0;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(#4fc3ff, #1c7ed6);
+  color: white;
+  cursor: pointer;
+}
+
+/* COPYRIGHT */
+.footer-bottom {
+  background: #1c5fb8;
+  text-align: center;
+  padding: 15px;
+  color: white;
+  font-size: 12px;
+}

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Army Wolves</title>
+
+  <link rel="stylesheet" href="/css/play.css" />
+
+  <!-- Required for Vite + @vitejs/plugin-react on non-index HTML pages -->
+  <script type="module">
+    import RefreshRuntime from "/@react-refresh";
+
+    RefreshRuntime.injectIntoGlobalHook(window);
+    window.$RefreshReg$ = () => {};
+    window.$RefreshSig$ = () => (type) => type;
+    window.__vite_plugin_react_preamble_installed__ = true;
+  </script>
+</head>
+
+<body>
+  <!-- STATIC NAVBAR -->
+  <header class="navbar">
+    <div class="nav-left">
+      <div class="logo">Army Wolves</div>
+
+      <div class="nav-links">
+        <a href="/index.html">Home</a>
+        <a href="#">Community</a>
+        <a href="#">Help</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- REACT ROOT -->
+  <div id="root"></div>
+
+  <!-- React entry -->
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+</html>
