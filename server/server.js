@@ -131,10 +131,12 @@ wss.on("connection", (ws) => {
   // MESSAGE HANDLER
   // ----------------------
   ws.on("message", (msg) => {
+    console.log("[SERVER] raw message:", msg.toString());
     let data;
 
     try {
       data = JSON.parse(msg);
+      console.log("[SERVER] parsed:", data);
     } catch {
       return;
     }
@@ -149,8 +151,10 @@ wss.on("connection", (ws) => {
     // MOVE
     // ----------------------
     if (data.type === "move") {
+
       player.targetX = data.x;
       player.targetY = data.y;
+    
     }
   });
 

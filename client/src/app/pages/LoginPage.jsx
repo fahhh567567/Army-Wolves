@@ -31,7 +31,7 @@ export default function LoginPage({ onNext }) {
   return (
     <div style={styles.page}>
       <div style={styles.card}>
-        <h1>Army Wolves</h1>
+        <h1></h1>
 
         <form onSubmit={handleSubmit}>
           <input

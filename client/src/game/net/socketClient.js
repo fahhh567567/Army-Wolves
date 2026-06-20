@@ -1,27 +1,12 @@
-import { S2C } from "./protocol.js";
+// game/net/socketClient.js
 
 export class SocketClient {
   constructor() {
     this.ws = null;
-    this.connected = false;
-
-    this.listeners = {
-      open: [],
-      close: [],
-      message: []
-    };
+    this.listeners = {};
   }
 
-  // --------------------------------------------------
-  // CONNECT (SAFE)
-  // --------------------------------------------------
   connect(url = "ws://localhost:3000") {
-    // 🚨 prevent duplicate sockets
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      console.warn("[Socket] already connected");
-      return;
-    }
-
     if (this.ws) {
       this.disconnect();
     }
@@ -29,22 +14,11 @@ export class SocketClient {
     this.ws = new WebSocket(url);
 
     this.ws.onopen = () => {
-      this.connected = true;
       console.log("[Socket] connected");
       this.emit("open");
     };
 
-    this.ws.onmessage = (event) => {
-      try {
-        const packet = JSON.parse(event.data);
-        this.emit("message", packet);
-      } catch (err) {
-        console.error("[Socket] invalid packet", err);
-      }
-    };
-
     this.ws.onclose = () => {
-      this.connected = false;
       console.log("[Socket] disconnected");
       this.emit("close");
     };
@@ -52,64 +26,44 @@ export class SocketClient {
     this.ws.onerror = (err) => {
       console.error("[Socket] error", err);
     };
+
+    this.ws.onmessage = (event) => {
+      try {
+        const packet = JSON.parse(event.data);
+        this.emit("message", packet);
+      } catch (e) {
+        console.error("[Socket] bad packet", e);
+      }
+    };
   }
 
-  // --------------------------------------------------
-  // SEND
-  // --------------------------------------------------
-  send(type, data = {}) {
-    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+  send(packet) {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      console.warn("[Socket] send failed: socket not open");
+      return;
+    }
 
-    this.ws.send(
-      JSON.stringify({
-        type,
-        ...data
-      })
-    );
+    console.log("[Socket] sending:", packet);
+
+    this.ws.send(JSON.stringify(packet));
   }
 
-  // --------------------------------------------------
-  // EVENT SYSTEM
-  // --------------------------------------------------
-  on(event, callback) {
+  on(event, cb) {
     if (!this.listeners[event]) {
       this.listeners[event] = [];
     }
 
-    this.listeners[event].push(callback);
+    this.listeners[event].push(cb);
   }
 
   emit(event, data) {
-    const list = this.listeners[event];
-    if (!list) return;
-
-    for (const cb of list) {
-      cb(data);
-    }
+    (this.listeners[event] || []).forEach(cb => cb(data));
   }
 
-  // --------------------------------------------------
-  // CLOSE (CLEAN)
-  // --------------------------------------------------
   disconnect() {
     if (!this.ws) return;
 
-    // 🚨 remove handlers first (prevents ghost events)
-    this.ws.onopen = null;
-    this.ws.onmessage = null;
-    this.ws.onclose = null;
-    this.ws.onerror = null;
-
-    if (
-      this.ws.readyState === WebSocket.OPEN ||
-      this.ws.readyState === WebSocket.CONNECTING
-    ) {
-      this.ws.close();
-    }
-
+    this.ws.close();
     this.ws = null;
-    this.connected = false;
-
-    console.log("[Socket] fully cleaned");
   }
 }

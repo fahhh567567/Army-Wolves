@@ -81,6 +81,7 @@ function handleClick(e) {
   }
 
   onMove?.(x, y);
+  console.log("CLICK DETECTED");
 }
 
 function handleMouseMove(e) {
@@ -95,8 +96,61 @@ function handleMouseMove(e) {
 
 function handleMouseDown() {
   pointerState.down = true;
+
+  const layout = getLastUILayout();
+  if (!layout) return;
+
+  const x = pointerState.x;
+  const y = pointerState.y;
+
+  for (const button of layout.toolbarButtons || []) {
+    if (
+      x >= button.x &&
+      x <= button.x + button.w &&
+      y >= button.y &&
+      y <= button.y + button.h
+    ) {
+      pointerState.pressedButton = button.id;
+      return;
+    }
+  }
+
+  const map = layout.mapButton;
+
+  if (
+    map &&
+    x >= map.x &&
+    x <= map.x + map.w &&
+    y >= map.y &&
+    y <= map.y + map.h
+  ) {
+    pointerState.pressedButton = "map";
+  }
 }
 
 function handleMouseUp() {
   pointerState.down = false;
+
+  const layout = getLastUILayout();
+  if (!layout) return;
+
+  const x = pointerState.x;
+  const y = pointerState.y;
+
+  const pressed = pointerState.pressedButton;
+  pointerState.pressedButton = null;
+
+  if (!pressed) return;
+
+  // toolbar buttons
+  const btn = layout.toolbarButtons.find(b => b.id === pressed);
+  if (btn?.action) {
+    btn.action();
+    return;
+  }
+
+  // map button
+  if (pressed === "map") {
+    uiRegistry.map?.action?.();
+  }
 }

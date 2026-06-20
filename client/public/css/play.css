@@ -5,7 +5,8 @@
 }
 
 html,
-body {
+body,
+#root {
   width: 100%;
   height: 100%;
 }
@@ -53,8 +54,25 @@ body {
   border-radius: 6px;
 }
 
-/* REACT APP ROOT */
+/* ROOT */
 #root {
   width: 100%;
   min-height: calc(100vh - 64px);
+}
+
+/* GAME PAGE CENTERING */
+.game-page {
+  width: 100%;
+  min-height: calc(100vh - 64px);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* CANVAS */
+#game {
+  display: block;
+  max-width: 95vw;
+  max-height: 95vh;
 }

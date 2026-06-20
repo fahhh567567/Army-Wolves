@@ -1,5 +1,6 @@
 import { ui } from "../assets/assets.js";
 import { layoutUI } from "../ui/layout.js";
+import { pointerState } from "../input/pointerState.js";
 
 let cachedLayout = null;
 let lastCanvasW = 0;
@@ -27,9 +28,7 @@ function safeDrawImage(ctx, img, x, y, w, h) {
   ctx.drawImage(img, x, y, w, h);
 }
 
-export function drawUI(ctx, canvas, inputState) {
-  const mouse = inputState?.mouse;
-
+export function drawUI(ctx, canvas) {
   const shouldRebuild =
     layoutDirty ||
     !cachedLayout ||
@@ -56,29 +55,29 @@ export function drawUI(ctx, canvas, inputState) {
   }
 
   // ----------------------
-  // TOOLBAR HOVER
+  // TOOLBAR HOVER (FIXED)
   // ----------------------
   for (const button of layout.toolbarButtons) {
     if (
-      mouse?.x >= button.x &&
-      mouse?.x <= button.x + button.w &&
-      mouse?.y >= button.y &&
-      mouse?.y <= button.y + button.h
+      pointerState.x >= button.x &&
+      pointerState.x <= button.x + button.w &&
+      pointerState.y >= button.y &&
+      pointerState.y <= button.y + button.h
     ) {
       button.hover = true;
     }
   }
 
   // ----------------------
-  // MAP HOVER
+  // MAP HOVER (FIXED)
   // ----------------------
   const map = layout.mapButton;
 
   map.hover =
-    mouse?.x >= map.x &&
-    mouse?.x <= map.x + map.w &&
-    mouse?.y >= map.y &&
-    mouse?.y <= map.y + map.h;
+    pointerState.x >= map.x &&
+    pointerState.x <= map.x + map.w &&
+    pointerState.y >= map.y &&
+    pointerState.y <= map.y + map.h;
 
   // ----------------------
   // HUD DEBUG
@@ -106,13 +105,53 @@ export function drawUI(ctx, canvas, inputState) {
   }
 
   // ----------------------
+  // TOOLTIP (ONLY ONCE)
+  // ----------------------
+  const hoveredButton = layout.toolbarButtons.find(b => b.hover);
+
+  if (hoveredButton) {
+    const text = hoveredButton.label || hoveredButton.id;
+
+    ctx.font = "14px Arial";
+    const padding = 6;
+
+    const textWidth = ctx.measureText(text).width;
+
+    const x = hoveredButton.x + hoveredButton.w / 2 - textWidth / 2;
+    const y = hoveredButton.y - 25;
+
+    ctx.fillStyle = "rgba(17, 105, 9, 0.7)";
+    ctx.fillRect(
+      x - padding,
+      y - 18,
+      textWidth + padding * 2,
+      20
+    );
+
+    ctx.fillStyle = "white";
+    ctx.fillText(text, x, y - 4);
+  }
+
+  // ----------------------
   // BUTTONS
   // ----------------------
   for (const button of layout.toolbarButtons) {
     const img = ui[button.id];
     if (!img) continue;
 
-    ctx.globalAlpha = button.hover ? 0.7 : 1;
+    const isHovered = button.hover;
+
+    const isPressed =
+      pointerState.down &&
+      pointerState.pressedButton === button.id;
+
+    if (isPressed) {
+      ctx.globalAlpha = 0.5;
+    } else if (isHovered) {
+      ctx.globalAlpha = 0.7;
+    } else {
+      ctx.globalAlpha = 1;
+    }
 
     safeDrawImage(
       ctx,

@@ -37,5 +37,5 @@ export const ui = {
   settings: loadImage("/assets/ui/toolbarbuttons/settings.png"),
   snowball: loadImage("/assets/ui/toolbarbuttons/snowball.png"),
   social: loadImage("/assets/ui/toolbarbuttons/social.png"),
-  wave: loadImage("/assets/ui/toolbarbuttons/wave.png")
+  emotes: loadImage("/assets/ui/toolbarbuttons/emotes.png")
 };

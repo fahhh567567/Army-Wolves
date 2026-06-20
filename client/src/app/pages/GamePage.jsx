@@ -9,7 +9,6 @@ export default function GamePage() {
   useEffect(() => {
     console.log("[GamePage] mounted");
 
-    // 🚨 prevents double init (StrictMode protection)
     if (startedRef.current) return;
     startedRef.current = true;
 
@@ -19,20 +18,14 @@ export default function GamePage() {
       playerId: null
     };
 
-    console.log("[GamePage] creating GameClient");
-
     const client = new GameClient(session);
     clientRef.current = client;
-
-    console.log("[GamePage] starting client");
 
     client.start().catch((err) => {
       console.error("[GameClient] FAILED START:", err);
     });
 
     return () => {
-      console.log("[GamePage] cleanup");
-
       startedRef.current = false;
 
       if (clientRef.current) {
@@ -42,5 +35,9 @@ export default function GamePage() {
     };
   }, []);
 
-  return <GameCanvas />;
+  return (
+    <div className="game-page">
+      <GameCanvas />
+    </div>
+  );
 }

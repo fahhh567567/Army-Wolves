@@ -2,7 +2,7 @@ import { uiRegistry } from "./registry.js";
 
 export function layoutUI(canvas) {
 
-  const hudHeight = 140;
+  const hudHeight = 80;
 
   const hud = {
     x: 0,
@@ -15,15 +15,15 @@ export function layoutUI(canvas) {
     width: 750 * 1.25,
     height: 225 * 1.25,
     x: (canvas.width - 750 * 1.25) / 2,
-    y: hud.y - 40
+    y: hud.y -95
   };
 
-  const buttonWidth = 60;
-  const buttonHeight = 60;
+  const buttonWidth = 55;
+  const buttonHeight = 55;
 
-  const leftBuffer = 0.011;
-  const spacing = 0.07;
-  const centerGap = 0.37;
+  const leftBuffer = 0.0159;
+  const spacing = 0.0658;
+  const centerGap = 0.38;
   const yOffset = 0.51;
 
   let x = toolbar.x + toolbar.width * leftBuffer;
@@ -57,7 +57,7 @@ export function layoutUI(canvas) {
   const mapButton = {
     id: "map",
     x: canvas.width - 250,
-    y: hud.y + 20,
+    y: hud.y -40,
     w: 120,
     h: 144,
     hover: false

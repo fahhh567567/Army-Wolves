@@ -1,13 +1,12 @@
 import { backgrounds } from "../assets/assets.js";
 import { drawBackground } from "./drawBackground.js";
-import { drawPlayers, setPlayerIdGetter } from "./drawPlayers.js";
+import { drawPlayers } from "./drawPlayers.js";
 import { drawExits } from "./drawExits.js";
 import { drawUI } from "./drawUI.js";
 
 let canvas = null;
 let ctx = null;
 let getState = null;
-
 let running = false;
 
 // ----------------------
@@ -23,16 +22,12 @@ export function startRenderer({ getState: stateGetter }) {
   ctx = canvas.getContext("2d");
   ctx.imageSmoothingEnabled = false;
 
-  // optional fixed size (you can later make responsive)
   canvas.width = 1520;
   canvas.height = 960;
 
   getState = stateGetter;
 
-  setPlayerIdGetter(() => stateGetter().playerId);
-
   running = true;
-
   requestAnimationFrame(loop);
 }
 
@@ -52,25 +47,33 @@ function loop() {
 export function render() {
   if (!ctx || !canvas) return;
 
-  const W = canvas.width;
-  const H = canvas.height;
-
-  ctx.clearRect(0, 0, W, H);
-
   const state = getState?.();
   if (!state) return;
 
-  const room = state.room || "lobby";
+  // SAFE LOG (no crash)
+  console.log("[RENDER ROOM]", state.room);
 
+  const room = state.room || "lobby";
+  const players = state.players || {};
+  const exits = state.exits || [];
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // BACKGROUND
   drawBackground(ctx, room, backgrounds);
 
-  if (state.players) {
-    drawExits(ctx, state.exits || []);
-    drawPlayers(ctx, state.players);
+  // EXITS
+  if (exits.length) {
+    drawExits(ctx, exits);
   }
 
-  // IMPORTANT: now safe
-  drawUI(ctx, canvas, state.inputState);
+  // PLAYERS (always safe)
+  drawPlayers(ctx, players, state.playerId);
+
+  // UI
+  if (state.inputState || state.ui) {
+    drawUI(ctx, canvas, state.inputState || state.ui);
+  }
 }
 
 // ----------------------

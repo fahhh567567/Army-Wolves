@@ -1,4 +1,5 @@
-import { SocketClient } from "../net/socketClient.js";
+import { NetworkManager } from "../net/networkManager.js";
+import { PacketRouter } from "../net/packetRouter.js";
 
 import { worldState } from "../state/worldState.js";
 import { stateBuffer } from "../state/stateBuffer.js";
@@ -10,16 +11,24 @@ export class GameClient {
   constructor(session) {
     this.session = session;
 
-    this.socket = new SocketClient();
     this.running = false;
-
     this.lastUpdateTime = 0;
     this.tickRate = 1000 / 60;
+
+    this.network = new NetworkManager(session);
+
+    this.router = new PacketRouter({
+      init: (p) => this.onInit(p),
+      state: (p) => this.onState(p),
+      player_join: (p) => this.onPlayerJoin(p),
+      player_leave: (p) => this.onPlayerLeave(p),
+      chat: (p) => this.onChat(p),
+    });
   }
 
-  // --------------------------------------------------
+  // ----------------------
   // START
-  // --------------------------------------------------
+  // ----------------------
   async start() {
     console.log("[GameClient] Starting...");
 
@@ -31,117 +40,108 @@ export class GameClient {
     this.connect();
   }
 
-  // --------------------------------------------------
-  // WORLD
-  // --------------------------------------------------
+  // ----------------------
+  // WORLD INIT
+  // ----------------------
   initWorld() {
     worldState.players = {};
     worldState.playerId = this.session.playerId;
     worldState.room = this.session.server || "lobby";
+    worldState.exits = [];
 
     console.log("[GameClient] World:", worldState.room);
   }
 
-  // --------------------------------------------------
+  // ----------------------
   // INPUT
-  // --------------------------------------------------
+  // ----------------------
   initInput() {
     startInput({
-      onMove: (x, y) => this.sendMove(x, y)
+      onMove: (x, y) => this.sendMove(x, y),
     });
   }
 
-  // --------------------------------------------------
+  // ----------------------
   // RENDER
-  // --------------------------------------------------
+  // ----------------------
   initRender() {
     startRenderer({
-      getState: () => worldState
+      getState: () => worldState,
     });
   }
 
-  // --------------------------------------------------
-  // SOCKET CONNECTION
-  // --------------------------------------------------
+  // ----------------------
+  // CONNECT
+  // ----------------------
   connect() {
-    this.socket.connect();
+    this.network.connect(this.router);
 
-    // connection events
-    this.socket.on("open", () => {
+    this.network.socket.on("open", () => {
       console.log("[GameClient] WS connected");
       this.authenticate();
     });
 
-    this.socket.on("close", () => {
+    this.network.socket.on("close", () => {
       console.warn("[GameClient] WS disconnected");
       this.running = false;
     });
-
-    // packet handler
-    this.socket.on("message", (packet) => {
-      this.handlePacket(packet);
-    });
   }
 
-  // --------------------------------------------------
-  // AUTH
-  // --------------------------------------------------
   authenticate() {
-    this.socket.send("auth", {
+    this.network.send("auth", {
       token: this.session.token,
-      server: this.session.server
+      server: this.session.server,
     });
   }
 
-  // --------------------------------------------------
-  // PACKET ROUTING
-  // --------------------------------------------------
-  handlePacket(packet) {
-    switch (packet.type) {
+  // ----------------------
+  // PACKETS
+  // ----------------------
+  onInit(packet) {
+    console.log("[GameClient] INIT");
 
-      case "init": {
-        console.log("[GameClient] INIT");
+    this.session.playerId = packet.id;
 
-        this.session.playerId = packet.id;
+    worldState.players = { ...packet.players };
+    worldState.room = packet.room;
+    worldState.exits = packet.exits || [];
 
-        worldState.players = { ...packet.players };
-        worldState.room = packet.room;
-
-        this.startLoop();
-        break;
-      }
-
-      case "state": {
-        stateBuffer.push({
-          time: packet.time,
-          players: packet.players
-        });
-        break;
-      }
-
-      case "player_join": {
-        worldState.players[packet.id] = packet.player;
-        break;
-      }
-
-      case "player_leave": {
-        delete worldState.players[packet.id];
-        break;
-      }
-
-      case "chat": {
-        console.log("[CHAT]", packet.message);
-        break;
-      }
-
-      default:
-        console.warn("[GameClient] Unknown packet:", packet.type);
-    }
+    this.startLoop();
   }
 
-  // --------------------------------------------------
+  onState(packet) {
+    // ✅ FIX: ROOM MUST UPDATE HERE (THIS WAS YOUR BUG)
+    if (packet.room && packet.room !== worldState.room) {
+      console.log("[ROOM SWITCH]", worldState.room, "→", packet.room);
+      worldState.room = packet.room;
+
+      // optional: clear interpolation when switching rooms
+      stateBuffer.clear();
+    }
+
+    stateBuffer.push({
+      time: packet.time,
+      players: packet.players,
+    });
+
+    worldState.exits = packet.exits || [];
+  }
+
+  onPlayerJoin(packet) {
+    worldState.players[packet.id] = packet.player;
+  }
+
+  onPlayerLeave(packet) {
+    delete worldState.players[packet.id];
+  }
+
+  onChat(packet) {
+    console.log("[CHAT]", packet.message);
+  }
+
+  // ----------------------
   // LOOP
-  // --------------------------------------------------
+  // ----------------------
   startLoop() {
     const loop = (time) => {
       if (!this.running) return;
@@ -149,7 +149,7 @@ export class GameClient {
       const delta = time - this.lastUpdateTime;
 
       if (delta >= this.tickRate) {
-        this.update(delta);
+        this.update();
         this.lastUpdateTime = time;
       }
 
@@ -159,50 +159,36 @@ export class GameClient {
     requestAnimationFrame(loop);
   }
 
-  // --------------------------------------------------
-  // UPDATE
-  // --------------------------------------------------
-  update(delta) {
+  update() {
     this.interpolate();
-    this.updateSystems(delta);
   }
 
-  // --------------------------------------------------
-  // INTERPOLATION (safe version)
-  // --------------------------------------------------
+  // ----------------------
+  // INTERPOLATION
+  // ----------------------
   interpolate() {
-    if (stateBuffer.length < 1) return;
+    if (!stateBuffer.buffer.length) return;
 
-    const latest = stateBuffer[stateBuffer.length - 1];
+    const latest = stateBuffer.buffer[stateBuffer.buffer.length - 1];
     if (!latest?.players) return;
 
     for (const id in latest.players) {
       worldState.players[id] = {
         ...worldState.players[id],
-        ...latest.players[id]
+        ...latest.players[id],
       };
     }
   }
 
-  // --------------------------------------------------
-  // SYSTEMS
-  // --------------------------------------------------
-  updateSystems(delta) {
-    // camera, animations, particles later
-  }
-
-  // --------------------------------------------------
+  // ----------------------
   // MOVE
-  // --------------------------------------------------
+  // ----------------------
   sendMove(x, y) {
-    this.socket.send("move", { x, y });
+    this.network.send("move", { x, y });
   }
 
-  // --------------------------------------------------
-  // STOP
-  // --------------------------------------------------
   stop() {
     this.running = false;
-    this.socket.disconnect();
+    this.network.disconnect();
   }
 }
