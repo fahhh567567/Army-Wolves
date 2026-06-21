@@ -108,7 +108,7 @@ wss.on("connection", (ws) => {
     y: 0,
     targetX: 0,
     targetY: 0,
-    speed: 190
+    speed: 500
   };
 
   applySpawn(player, "lobby");
@@ -131,12 +131,12 @@ wss.on("connection", (ws) => {
   // MESSAGE HANDLER
   // ----------------------
   ws.on("message", (msg) => {
-    console.log("[SERVER] raw message:", msg.toString());
+    //console.log("[SERVER] raw message:", msg.toString());
     let data;
 
     try {
       data = JSON.parse(msg);
-      console.log("[SERVER] parsed:", data);
+      //console.log("[SERVER] parsed:", data);
     } catch {
       return;
     }
